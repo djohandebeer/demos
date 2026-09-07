@@ -1,0 +1,70 @@
+{
+  "isAdvancedMode": false,
+  "machineType": "moore",
+  "nodes": [
+    {
+      "id": 1788783590065,
+      "x": 168,
+      "y": 172,
+      "label": "Off",
+      "output": "0",
+      "isInitial": true
+    },
+    {
+      "id": 1788783595385,
+      "x": 144,
+      "y": 395,
+      "label": "On1",
+      "output": "1",
+      "isInitial": false
+    },
+    {
+      "id": 1788783599121,
+      "x": 322,
+      "y": 390,
+      "label": "On2",
+      "output": "1",
+      "isInitial": false
+    },
+    {
+      "id": 1788783603378,
+      "x": 512,
+      "y": 376,
+      "label": "On3",
+      "output": "1",
+      "isInitial": false
+    }
+  ],
+  "transitions": [
+    {
+      "from": 1788783590065,
+      "to": 1788783595385,
+      "condition": "1",
+      "output": "0"
+    },
+    {
+      "from": 1788783595385,
+      "to": 1788783599121,
+      "condition": "",
+      "output": "0"
+    },
+    {
+      "from": 1788783599121,
+      "to": 1788783603378,
+      "condition": "",
+      "output": "0"
+    },
+    {
+      "from": 1788783603378,
+      "to": 1788783590065,
+      "condition": "",
+      "output": "0"
+    },
+    {
+      "from": 1788783590065,
+      "to": 1788783590065,
+      "condition": "0",
+      "output": "0"
+    }
+  ]
+}
