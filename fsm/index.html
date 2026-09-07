@@ -38,93 +38,45 @@
       z-index: 10;
     }
 
-    .title { font-weight: 700; font-size: 1.1rem; }
+    .title { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 15px; }
 
-    .control-group {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .control-group { display: flex; align-items: center; gap: 12px; }
 
     .btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
+      background: var(--primary); color: white; border: none;
+      padding: 8px 14px; border-radius: 6px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
     }
     .btn:hover { background: var(--primary-hover); }
-
-    .btn-clock {
-      background: var(--accent-active);
-      font-size: 0.95rem;
-    }
+    .btn-clock { background: var(--accent-active); font-size: 0.95rem; }
     .btn-clock:hover { background: #16a34a; }
-
-    .btn-secondary {
-      background: #e2e8f0;
-      color: var(--text);
-    }
+    .btn-secondary { background: #e2e8f0; color: var(--text); }
     .btn-secondary:hover { background: #cbd5e1; }
 
-    .input-toggle {
-      display: flex;
-      align-items: center;
-      background: #f1f5f9;
-      padding: 4px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-    }
+    .input-toggle { display: flex; align-items: center; background: #f1f5f9; padding: 4px; border-radius: 6px; border: 1px solid var(--border); }
+    .toggle-btn { padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; user-select: none; }
+    .toggle-btn.active { background: var(--primary); color: white; }
 
-    .toggle-btn {
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-      user-select: none;
-    }
-    .toggle-btn.active {
-      background: var(--primary);
-      color: white;
+    .text-input {
+      padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border);
+      font-family: monospace; font-size: 1rem; width: 80px; text-align: center;
     }
 
     .status-badge {
-      background: #f1f5f9;
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      font-family: monospace;
-      font-size: 0.95rem;
+      background: #f1f5f9; padding: 6px 12px; border-radius: 6px;
+      border: 1px solid var(--border); font-family: monospace; font-size: 0.95rem;
     }
 
-    main {
-      flex: 1;
-      position: relative;
-    }
+    .advanced-controls { display: none; align-items: center; gap: 10px; background: #fffbeb; padding: 4px 10px; border-radius: 6px; border: 1px solid #fde68a; }
+    .advanced-controls.visible { display: flex; }
 
-    canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-      background: #ffffff;
-      cursor: crosshair;
-    }
+    main { flex: 1; position: relative; }
+    canvas { width: 100%; height: 100%; display: block; background: #ffffff; cursor: crosshair; }
 
     .instructions {
-      position: absolute;
-      bottom: 15px;
-      left: 15px;
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(4px);
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      font-size: 0.85rem;
-      pointer-events: none;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      position: absolute; bottom: 15px; left: 15px; background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(4px); padding: 12px; border-radius: 8px; border: 1px solid var(--border);
+      font-size: 0.85rem; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     .instructions ul { list-style: none; margin-top: 4px; }
     .instructions li { margin-bottom: 2px; }
@@ -133,17 +85,35 @@
 <body>
 
   <header>
-    <div class="title">FSM Interactive Designer & Simulator</div>
+    <div class="title">
+      FSM Simulator
+      <label style="font-size: 0.85rem; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+        <input type="checkbox" id="advanced-toggle" onchange="toggleAdvancedMode()"> Advanced
+      </label>
+    </div>
     
+    <div class="advanced-controls" id="advanced-controls">
+      <label style="font-size: 0.85rem; font-weight: bold;">Type:</label>
+      <select id="machine-type" onchange="changeMachineType()" style="padding: 4px; border-radius: 4px;">
+        <option value="moore">Moore</option>
+        <option value="mealy">Mealy</option>
+      </select>
+    </div>
+
     <div class="control-group">
-      <label>Current Input Bit:</label>
-      <div class="input-toggle">
-        <div class="toggle-btn active" id="btn-input-0" onclick="setInput('0')">0</div>
-        <div class="toggle-btn" id="btn-input-1" onclick="setInput('1')">1</div>
+      <label>Input:</label>
+      
+      <!-- Simple Mode Inputs -->
+      <div class="input-toggle" id="simple-inputs">
+        <div class="toggle-btn active" id="btn-input-0" onclick="setSimpleInput('0')">0</div>
+        <div class="toggle-btn" id="btn-input-1" onclick="setSimpleInput('1')">1</div>
       </div>
 
+      <!-- Advanced Mode Inputs -->
+      <input type="text" id="multi-input" class="text-input" value="0" style="display: none;" oninput="handleMultiInput()" placeholder="Bits">
+
       <button class="btn btn-clock" onclick="triggerClockPulse()">⚡ Clock Edge</button>
-      <button class="btn btn-secondary" onclick="resetSimulation()">Reset Sim</button>
+      <button class="btn btn-secondary" onclick="resetSimulation()">Reset</button>
       <button class="btn btn-secondary" onclick="clearCanvas()">Clear All</button>
     </div>
 
@@ -158,12 +128,10 @@
     <div class="instructions">
       <strong>Editor Controls:</strong>
       <ul>
-        <li>• <strong>Double-Click canvas:</strong> Create new State Node</li>
-        <li>• <strong>Shift + Drag (Node to Node):</strong> Draw Transition Arrow</li>
-        <li>• <strong>Double-Click Node:</strong> Edit Name, Output, or set as Initial State</li>
-        <li>• <strong>Double-Click Transition:</strong> Edit Input Condition (e.g. 0, 1)</li>
-        <li>• <strong>Click + Drag:</strong> Move State Node</li>
-        <li>• <strong>Select + Delete / Backspace:</strong> Delete Node or Transition</li>
+        <li>• <strong>Double-Click canvas:</strong> Create Node</li>
+        <li>• <strong>Shift + Drag:</strong> Draw Transition</li>
+        <li>• <strong>Double-Click Node/Transition:</strong> Edit Properties</li>
+        <li>• <strong>Select + Delete:</strong> Remove Object</li>
       </ul>
     </div>
   </main>
@@ -173,11 +141,13 @@
     const ctx = canvas.getContext('2d');
 
     // Data Models
+    let isAdvancedMode = false;
+    let machineType = 'moore'; // 'moore' or 'mealy'
     let nodes = [];
     let transitions = [];
     
     // UI State
-    let selectedObject = null; // { type: 'node'|'transition', obj: ... }
+    let selectedObject = null;
     let draggedNode = null;
     let shiftDragSource = null;
     let mousePos = { x: 0, y: 0 };
@@ -199,27 +169,64 @@
     function init() {
       resizeCanvas();
       
-      // Default initial states for quick testing
       const s0 = { id: 1, x: 200, y: 250, label: 'S0', output: '0', isInitial: true };
       const s1 = { id: 2, x: 450, y: 250, label: 'S1', output: '1', isInitial: false };
       nodes.push(s0, s1);
       
       transitions.push(
-        { from: s0, to: s1, condition: '1' },
-        { from: s1, to: s0, condition: '0' },
-        { from: s0, to: s0, condition: '0' },
-        { from: s1, to: s1, condition: '1' }
+        { from: s0, to: s1, condition: '1', output: '1' },
+        { from: s1, to: s0, condition: '0', output: '0' },
+        { from: s0, to: s0, condition: '0', output: '0' },
+        { from: s1, to: s1, condition: '1', output: '1' }
       );
 
       resetSimulation();
       draw();
     }
 
+    // --- UI Toggles ---
+    function toggleAdvancedMode() {
+      isAdvancedMode = document.getElementById('advanced-toggle').checked;
+      
+      const advControls = document.getElementById('advanced-controls');
+      const simpleInputs = document.getElementById('simple-inputs');
+      const multiInput = document.getElementById('multi-input');
+
+      if (isAdvancedMode) {
+        advControls.classList.add('visible');
+        simpleInputs.style.display = 'none';
+        multiInput.style.display = 'block';
+        currentInput = multiInput.value;
+      } else {
+        advControls.classList.remove('visible');
+        simpleInputs.style.display = 'flex';
+        multiInput.style.display = 'none';
+        machineType = 'moore';
+        document.getElementById('machine-type').value = 'moore';
+        setSimpleInput('0');
+      }
+      updateStatusDisplay();
+      draw();
+    }
+
+    function changeMachineType() {
+      machineType = document.getElementById('machine-type').value;
+      updateStatusDisplay();
+      draw();
+    }
+
     // --- Simulation Logic ---
-    function setInput(val) {
+    function setSimpleInput(val) {
+      if (isAdvancedMode) return;
       currentInput = val;
       document.getElementById('btn-input-0').classList.toggle('active', val === '0');
       document.getElementById('btn-input-1').classList.toggle('active', val === '1');
+      updateStatusDisplay(); // Mealy output might change on input change
+    }
+
+    function handleMultiInput() {
+      currentInput = document.getElementById('multi-input').value.trim();
+      updateStatusDisplay(); // Mealy outputs depend on current input
     }
 
     function resetSimulation() {
@@ -232,9 +239,8 @@
     function triggerClockPulse() {
       if (!currentState) return;
 
-      // Find matching transition from current state
       const transition = transitions.find(t => 
-        t.from === currentState && t.condition.trim() === currentInput.trim()
+        t.from === currentState && t.condition === currentInput
       );
 
       if (transition) {
@@ -246,32 +252,37 @@
 
     function updateStatusDisplay() {
       const display = document.getElementById('status-display');
-      if (currentState) {
-        display.innerText = `State: ${currentState.label} | Output: ${currentState.output}`;
-      } else {
+      if (!currentState) {
         display.innerText = `State: None | Output: --`;
+        return;
       }
+
+      let activeOutput = '--';
+      if (machineType === 'moore') {
+        activeOutput = currentState.output;
+      } else if (machineType === 'mealy') {
+        // Mealy output depends on current state AND current input combination immediately
+        const activeTransition = transitions.find(t => 
+          t.from === currentState && t.condition === currentInput
+        );
+        activeOutput = activeTransition ? activeTransition.output : 'undef';
+      }
+
+      display.innerText = `State: ${currentState.label} | Output: ${activeOutput}`;
     }
 
     // --- Drawing Engine ---
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Render Transitions
       transitions.forEach(t => drawTransition(t));
 
-      // Render Shift-Drag temporary arrow line
       if (shiftDragSource) {
-        ctx.beginPath();
-        ctx.setLineDash([5, 5]);
+        ctx.beginPath(); ctx.setLineDash([5, 5]);
         ctx.moveTo(shiftDragSource.x, shiftDragSource.y);
         ctx.lineTo(mousePos.x, mousePos.y);
-        ctx.strokeStyle = '#94a3b8';
-        ctx.stroke();
-        ctx.setLineDash([]);
+        ctx.strokeStyle = '#94a3b8'; ctx.stroke(); ctx.setLineDash([]);
       }
 
-      // Render Nodes
       nodes.forEach(node => drawNode(node));
     }
 
@@ -281,37 +292,28 @@
 
       ctx.beginPath();
       ctx.arc(node.x, node.y, NODE_RADIUS, 0, 2 * Math.PI);
-
-      // Node Fill
-      if (isActive) {
-        ctx.fillStyle = '#dcfce7'; // Active state highlight (light green)
-      } else {
-        ctx.fillStyle = '#ffffff';
-      }
+      ctx.fillStyle = isActive ? '#dcfce7' : '#ffffff';
       ctx.fill();
 
-      // Node Border
       ctx.lineWidth = isSelected ? 3 : 2;
       ctx.strokeStyle = isActive ? '#22c55e' : (isSelected ? '#2563eb' : '#334155');
       ctx.stroke();
 
-      // Initial State Indicator Arrow
       if (node.isInitial) {
         ctx.beginPath();
         ctx.moveTo(node.x - NODE_RADIUS - 20, node.y);
         ctx.lineTo(node.x - NODE_RADIUS, node.y);
-        ctx.strokeStyle = '#1e293b';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2; ctx.stroke();
         drawArrowHead(node.x - NODE_RADIUS, node.y, 0);
       }
 
-      // Label Text (State Name / Output)
       ctx.fillStyle = '#0f172a';
       ctx.font = 'bold 14px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`${node.label}/${node.output}`, node.x, node.y);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      
+      // Node Text Rendering changes based on Moore vs Mealy
+      const displayText = machineType === 'moore' ? `${node.label}/${node.output}` : node.label;
+      ctx.fillText(displayText, node.x, node.y);
     }
 
     function drawTransition(t) {
@@ -320,50 +322,36 @@
       ctx.fillStyle = ctx.strokeStyle;
       ctx.lineWidth = isSelected ? 2.5 : 1.5;
 
-      // Self-loop
+      const displayText = machineType === 'mealy' ? `${t.condition}/${t.output}` : t.condition;
+
       if (t.from === t.to) {
         const loopRadius = 20;
-        const x = t.from.x;
-        const y = t.from.y - NODE_RADIUS;
+        const x = t.from.x; const y = t.from.y - NODE_RADIUS;
 
         ctx.beginPath();
         ctx.arc(x, y - loopRadius, loopRadius, 0.8 * Math.PI, 2.2 * Math.PI);
         ctx.stroke();
-
         drawArrowHead(x + loopRadius * Math.cos(0.25 * Math.PI), y - loopRadius + loopRadius * Math.sin(0.25 * Math.PI), -Math.PI / 4);
 
-        // Text
         ctx.font = '12px sans-serif';
-        ctx.fillText(`In: ${t.condition}`, x, y - loopRadius * 2 - 5);
+        ctx.fillText(displayText, x, y - loopRadius * 2 - 5);
         return;
       }
 
-      // Straight / Curved Arrow between nodes
-      const dx = t.to.x - t.from.x;
-      const dy = t.to.y - t.from.y;
+      const dx = t.to.x - t.from.x; const dy = t.to.y - t.from.y;
       const dist = Math.hypot(dx, dy);
-
       if (dist === 0) return;
 
       const angle = Math.atan2(dy, dx);
-      
-      // Check if bidirectional pair exists (to curve arrow)
       const reverseExists = transitions.some(other => other.from === t.to && other.to === t.from);
-      
       let startX, startY, endX, endY, textX, textY;
 
       if (reverseExists) {
-        // Curve rendering
         const curveOffset = 25;
-        const midX = (t.from.x + t.to.x) / 2;
-        const midY = (t.from.y + t.to.y) / 2;
-        const normalX = -Math.sin(angle);
-        const normalY = Math.cos(angle);
+        const midX = (t.from.x + t.to.x) / 2; const midY = (t.from.y + t.to.y) / 2;
+        const normalX = -Math.sin(angle); const normalY = Math.cos(angle);
+        const ctrlX = midX + normalX * curveOffset; const ctrlY = midY + normalY * curveOffset;
 
-        const ctrlX = midX + normalX * curveOffset;
-        const ctrlY = midY + normalY * curveOffset;
-
-        // Trim endpoints to edges of node circle
         startX = t.from.x + NODE_RADIUS * Math.cos(angle + 0.3);
         startY = t.from.y + NODE_RADIUS * Math.sin(angle + 0.3);
         endX = t.to.x - NODE_RADIUS * Math.cos(angle - 0.3);
@@ -376,46 +364,37 @@
 
         const endAngle = Math.atan2(endY - ctrlY, endX - ctrlX);
         drawArrowHead(endX, endY, endAngle);
-
-        textX = ctrlX + normalX * 8;
-        textY = ctrlY + normalY * 8;
+        textX = ctrlX + normalX * 8; textY = ctrlY + normalY * 8;
       } else {
-        // Straight line
         startX = t.from.x + NODE_RADIUS * Math.cos(angle);
         startY = t.from.y + NODE_RADIUS * Math.sin(angle);
         endX = t.to.x - NODE_RADIUS * Math.cos(angle);
         endY = t.to.y - NODE_RADIUS * Math.sin(angle);
 
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(endX, endY);
-        ctx.stroke();
-
+        ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(endX, endY); ctx.stroke();
         drawArrowHead(endX, endY, angle);
 
         textX = (startX + endX) / 2 - Math.sin(angle) * 12;
         textY = (startY + endY) / 2 + Math.cos(angle) * 12;
       }
 
-      // Draw transition label
       ctx.font = 'bold 12px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(t.condition, textX, textY);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      
+      // Draw background rect for text readability
+      const textWidth = ctx.measureText(displayText).width;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.fillRect(textX - textWidth/2 - 2, textY - 8, textWidth + 4, 16);
+      
+      ctx.fillStyle = isSelected ? '#2563eb' : '#64748b';
+      ctx.fillText(displayText, textX, textY);
     }
 
     function drawArrowHead(x, y, angle) {
       const headLen = 10;
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(angle);
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(-headLen, -headLen / 2);
-      ctx.lineTo(-headLen, headLen / 2);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
+      ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-headLen, -headLen / 2); ctx.lineTo(-headLen, headLen / 2);
+      ctx.closePath(); ctx.fill(); ctx.restore();
     }
 
     // --- Interactive Mouse Handlers ---
@@ -424,71 +403,54 @@
       return { x: e.clientX - rect.left, y: e.clientY - rect.top };
     }
 
-    function findNodeAt(pos) {
-      return nodes.find(n => Math.hypot(n.x - pos.x, n.y - pos.y) <= NODE_RADIUS);
-    }
-
+    function findNodeAt(pos) { return nodes.find(n => Math.hypot(n.x - pos.x, n.y - pos.y) <= NODE_RADIUS); }
     function findTransitionAt(pos) {
       return transitions.find(t => {
         if (t.from === t.to) return false;
-        const d = distToSegment(pos, t.from, t.to);
-        return d < 8;
+        const l2 = Math.hypot(t.from.x - t.to.x, t.from.y - t.to.y) ** 2;
+        if (l2 === 0) return false;
+        let p = ((pos.x - t.from.x) * (t.to.x - t.from.x) + (pos.y - t.from.y) * (t.to.y - t.from.y)) / l2;
+        p = Math.max(0, Math.min(1, p));
+        const d = Math.hypot(pos.x - (t.from.x + p * (t.to.x - t.from.x)), pos.y - (t.from.y + p * (t.to.y - t.from.y)));
+        return d < 12;
       });
-    }
-
-    function distToSegment(p, v, w) {
-      const l2 = Math.hypot(v.x - w.x, v.y - w.y) ** 2;
-      if (l2 === 0) return Math.hypot(p.x - v.x, p.y - v.y);
-      let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
-      t = Math.max(0, Math.min(1, t));
-      return Math.hypot(p.x - (v.x + t * (w.x - v.x)), p.y - (v.y + t * (w.y - v.y)));
     }
 
     canvas.addEventListener('mousedown', e => {
       mousePos = getMousePos(e);
       const clickedNode = findNodeAt(mousePos);
 
-      if (e.shiftKey && clickedNode) {
-        shiftDragSource = clickedNode;
-        return;
-      }
+      if (e.shiftKey && clickedNode) { shiftDragSource = clickedNode; return; }
 
       if (clickedNode) {
-        draggedNode = clickedNode;
-        selectedObject = { type: 'node', obj: clickedNode };
+        draggedNode = clickedNode; selectedObject = { type: 'node', obj: clickedNode };
       } else {
         const clickedTransition = findTransitionAt(mousePos);
-        if (clickedTransition) {
-          selectedObject = { type: 'transition', obj: clickedTransition };
-        } else {
-          selectedObject = null;
-        }
+        selectedObject = clickedTransition ? { type: 'transition', obj: clickedTransition } : null;
       }
       draw();
     });
 
     canvas.addEventListener('mousemove', e => {
       mousePos = getMousePos(e);
-      if (draggedNode) {
-        draggedNode.x = mousePos.x;
-        draggedNode.y = mousePos.y;
-        draw();
-      } else if (shiftDragSource) {
-        draw();
-      }
+      if (draggedNode) { draggedNode.x = mousePos.x; draggedNode.y = mousePos.y; draw(); } 
+      else if (shiftDragSource) { draw(); }
     });
 
     canvas.addEventListener('mouseup', e => {
       if (shiftDragSource) {
         const targetNode = findNodeAt(mousePos);
         if (targetNode) {
-          const cond = prompt("Enter transition input condition:", "0");
+          const cond = prompt("Input condition (e.g., 00):", "0");
           if (cond !== null) {
-            transitions.push({ from: shiftDragSource, to: targetNode, condition: cond.trim() });
+            let out = "0";
+            if (machineType === 'mealy') {
+              out = prompt("Transition Output (e.g., 11):", "0");
+            }
+            transitions.push({ from: shiftDragSource, to: targetNode, condition: cond.trim(), output: out ? out.trim() : "0" });
           }
         }
-        shiftDragSource = null;
-        draw();
+        shiftDragSource = null; draw();
       }
       draggedNode = null;
     });
@@ -498,16 +460,16 @@
       const clickedNode = findNodeAt(pos);
 
       if (clickedNode) {
-        // Edit State
         const label = prompt("Edit State Label:", clickedNode.label);
         if (label === null) return;
-        const output = prompt("Edit State Output:", clickedNode.output);
-        if (output === null) return;
-        const isInit = confirm("Set as Initial State?");
-
         clickedNode.label = label.trim();
-        clickedNode.output = output.trim();
-        if (isInit) {
+
+        if (machineType === 'moore' || !isAdvancedMode) {
+          const output = prompt("Edit State Output:", clickedNode.output);
+          if (output !== null) clickedNode.output = output.trim();
+        }
+
+        if (confirm("Set as Initial State?")) {
           nodes.forEach(n => n.isInitial = false);
           clickedNode.isInitial = true;
           currentState = clickedNode;
@@ -516,22 +478,17 @@
       } else {
         const clickedTransition = findTransitionAt(pos);
         if (clickedTransition) {
-          // Edit Transition
-          const cond = prompt("Edit Transition Condition:", clickedTransition.condition);
+          const cond = prompt("Edit Condition:", clickedTransition.condition);
           if (cond !== null) clickedTransition.condition = cond.trim();
+          
+          if (machineType === 'mealy') {
+            const out = prompt("Edit Output:", clickedTransition.output);
+            if (out !== null) clickedTransition.output = out.trim();
+          }
+          updateStatusDisplay();
         } else {
-          // Create new State Node
-          const newId = nodes.length + 1;
-          const newNode = {
-            id: Date.now(),
-            x: pos.x,
-            y: pos.y,
-            label: `S${nodes.length}`,
-            output: '0',
-            isInitial: nodes.length === 0
-          };
-          nodes.push(newNode);
-          if (newNode.isInitial) currentState = newNode;
+          nodes.push({ id: Date.now(), x: pos.x, y: pos.y, label: `S${nodes.length}`, output: '0', isInitial: nodes.length === 0 });
+          if (nodes.length === 1) currentState = nodes[0];
         }
       }
       draw();
@@ -540,29 +497,18 @@
     window.addEventListener('keydown', e => {
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedObject) {
         if (selectedObject.type === 'node') {
-          const target = selectedObject.obj;
-          nodes = nodes.filter(n => n !== target);
-          transitions = transitions.filter(t => t.from !== target && t.to !== target);
-          if (currentState === target) currentState = nodes[0] || null;
-        } else if (selectedObject.type === 'transition') {
+          nodes = nodes.filter(n => n !== selectedObject.obj);
+          transitions = transitions.filter(t => t.from !== selectedObject.obj && t.to !== selectedObject.obj);
+          if (currentState === selectedObject.obj) currentState = nodes[0] || null;
+        } else {
           transitions = transitions.filter(t => t !== selectedObject.obj);
         }
-        selectedObject = null;
-        updateStatusDisplay();
-        draw();
+        selectedObject = null; updateStatusDisplay(); draw();
       }
     });
 
-    function clearCanvas() {
-      nodes = [];
-      transitions = [];
-      selectedObject = null;
-      currentState = null;
-      updateStatusDisplay();
-      draw();
-    }
+    function clearCanvas() { nodes = []; transitions = []; selectedObject = null; currentState = null; updateStatusDisplay(); draw(); }
 
-    // Launch App
     init();
   </script>
 </body>
