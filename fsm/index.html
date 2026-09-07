@@ -64,12 +64,9 @@
     </div>
 
     <div class="control-group">
-      <!-- Examples Dropdown -->
+      <!-- Examples Dropdown (Dynamically populated) -->
       <select id="example-select" class="select-dropdown" onchange="loadSelectedExample(this.value)">
-        <option value="">-- Select Example --</option>
-        <option value="sequence_detector.json">Sequence Detector (101)</option>
-        <option value="traffic_light.json">Traffic Light Controller</option>
-        <option value="binary_counter.json">2-Bit Binary Counter</option>
+        <option value="">Loading examples...</option>
       </select>
 
       <div class="divider"></div>
@@ -144,6 +141,8 @@
 
     function init() {
       resizeCanvas();
+      fetchExamplesManifest(); // Load dynamic dropdown items
+
       const s0 = { id: 1, x: 200, y: 250, label: 'S0', output: '0', isInitial: true };
       const s1 = { id: 2, x: 450, y: 250, label: 'S1', output: '1', isInitial: false };
       nodes.push(s0, s1);
@@ -154,6 +153,30 @@
         { from: s1, to: s1, condition: '', output: '1' } 
       );
       resetSimulation(); draw();
+    }
+
+    // --- Dynamic Manifest Fetcher ---
+    async function fetchExamplesManifest() {
+      const selectEl = document.getElementById('example-select');
+      try {
+        const response = await fetch('./examples/manifest.json');
+        if (!response.ok) throw new Error('Manifest not found');
+        
+        const examples = await response.json();
+        
+        // Clear loading option and populate
+        selectEl.innerHTML = '<option value="">-- Select Example --</option>';
+        examples.forEach(ex => {
+          const option = document.createElement('option');
+          option.value = ex.file;
+          option.textContent = ex.name;
+          if (ex.description) option.title = ex.description; // Native browser tooltip on hover
+          selectEl.appendChild(option);
+        });
+      } catch (err) {
+        console.warn('Could not load examples manifest:', err);
+        selectEl.innerHTML = '<option value="">No examples available</option>';
+      }
     }
 
     // --- Core Model Loader ---
