@@ -6,80 +6,43 @@
   <title>Interactive FSM Simulator</title>
   <style>
     :root {
-      --bg-color: #f8f9fa;
-      --panel-bg: #ffffff;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --accent-active: #22c55e;
-      --border: #cbd5e1;
-      --text: #1e293b;
+      --bg-color: #f8f9fa; --panel-bg: #ffffff; --primary: #2563eb;
+      --primary-hover: #1d4ed8; --accent-active: #22c55e; --border: #cbd5e1;
+      --text: #1e293b; --danger: #ef4444; --danger-hover: #dc2626;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg-color);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    header {
-      background: var(--panel-bg);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 15px;
-      flex-wrap: wrap;
-      z-index: 10;
-    }
-
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-color); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    header { background: var(--panel-bg); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap; z-index: 10; }
     .title { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 15px; }
-
     .control-group { display: flex; align-items: center; gap: 12px; }
-
-    .btn {
-      background: var(--primary); color: white; border: none;
-      padding: 8px 14px; border-radius: 6px; font-weight: 600;
-      cursor: pointer; transition: background 0.2s;
-    }
+    .btn { background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
     .btn:hover { background: var(--primary-hover); }
     .btn-clock { background: var(--accent-active); font-size: 0.95rem; }
     .btn-clock:hover { background: #16a34a; }
     .btn-secondary { background: #e2e8f0; color: var(--text); }
     .btn-secondary:hover { background: #cbd5e1; }
-
+    .select-dropdown { padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--panel-bg); color: var(--text); font-weight: 600; cursor: pointer; }
     .input-toggle { display: flex; align-items: center; background: #f1f5f9; padding: 4px; border-radius: 6px; border: 1px solid var(--border); }
     .toggle-btn { padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; user-select: none; }
     .toggle-btn.active { background: var(--primary); color: white; }
-
-    .text-input {
-      padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border);
-      font-family: monospace; font-size: 1rem; width: 80px; text-align: center;
-    }
-
-    .status-badge {
-      background: #f1f5f9; padding: 6px 12px; border-radius: 6px;
-      border: 1px solid var(--border); font-family: monospace; font-size: 0.95rem;
-    }
-
+    .text-input { padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); font-family: monospace; font-size: 1rem; width: 80px; text-align: center; }
+    .status-badge { background: #f1f5f9; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); font-family: monospace; font-size: 0.95rem; }
     .advanced-controls { display: none; align-items: center; gap: 10px; background: #fffbeb; padding: 4px 10px; border-radius: 6px; border: 1px solid #fde68a; }
     .advanced-controls.visible { display: flex; }
-
     main { flex: 1; position: relative; }
     canvas { width: 100%; height: 100%; display: block; background: #ffffff; cursor: crosshair; }
-
-    .instructions {
-      position: absolute; bottom: 15px; left: 15px; background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(4px); padding: 12px; border-radius: 8px; border: 1px solid var(--border);
-      font-size: 0.85rem; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
+    .inspector-panel { position: absolute; top: 15px; right: 15px; width: 240px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(4px); border: 1px solid var(--border); border-radius: 8px; padding: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); z-index: 5; }
+    .inspector-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 0.95rem; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+    .inspector-field { margin-bottom: 10px; }
+    .inspector-field label { display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 4px; font-weight: 600; }
+    .inspector-field input[type="text"] { width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; font-family: monospace; font-size: 0.95rem; }
+    .btn-delete { width: 100%; background: var(--danger); color: white; border: none; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 6px; }
+    .btn-delete:hover { background: var(--danger-hover); }
+    .btn-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text); }
+    .instructions { position: absolute; bottom: 15px; left: 15px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(4px); padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.85rem; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     .instructions ul { list-style: none; margin-top: 4px; }
     .instructions li { margin-bottom: 2px; }
+    .divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
   </style>
 </head>
 <body>
@@ -101,17 +64,30 @@
     </div>
 
     <div class="control-group">
-      <label>Input:</label>
+      <!-- Examples Dropdown -->
+      <select id="example-select" class="select-dropdown" onchange="loadSelectedExample(this.value)">
+        <option value="">-- Select Example --</option>
+        <option value="sequence_detector.json">Sequence Detector (101)</option>
+        <option value="traffic_light.json">Traffic Light Controller</option>
+        <option value="binary_counter.json">2-Bit Binary Counter</option>
+      </select>
+
+      <div class="divider"></div>
+
+      <!-- File I/O Controls -->
+      <button class="btn btn-secondary" onclick="saveFSM()">Save</button>
+      <button class="btn btn-secondary" onclick="loadFSM()">Load File</button>
+      <input type="file" id="file-input" accept=".json" style="display: none;" onchange="handleFileUpload(event)">
       
-      <!-- Simple Mode Inputs -->
+      <div class="divider"></div>
+      
+      <label>Input:</label>
       <div class="input-toggle" id="simple-inputs">
         <div class="toggle-btn active" id="btn-input-0" onclick="setSimpleInput('0')">0</div>
         <div class="toggle-btn" id="btn-input-1" onclick="setSimpleInput('1')">1</div>
       </div>
-
-      <!-- Advanced Mode Inputs -->
       <input type="text" id="multi-input" class="text-input" value="0" style="display: none;" oninput="handleMultiInput()" placeholder="Bits">
-
+      
       <button class="btn btn-clock" onclick="triggerClockPulse()">⚡ Clock Edge</button>
       <button class="btn btn-secondary" onclick="resetSimulation()">Reset</button>
       <button class="btn btn-secondary" onclick="clearCanvas()">Clear All</button>
@@ -125,13 +101,22 @@
   <main>
     <canvas id="fsmCanvas"></canvas>
     
+    <div id="inspector" class="inspector-panel" style="display: none;">
+      <div class="inspector-header">
+        <span id="inspector-title">Properties</span>
+        <button onclick="deselectObject()" class="btn-close">&times;</button>
+      </div>
+      <div id="inspector-content"></div>
+    </div>
+
     <div class="instructions">
       <strong>Editor Controls:</strong>
       <ul>
         <li>• <strong>Double-Click canvas:</strong> Create Node</li>
+        <li>• <strong>Click Node/Label:</strong> Edit in Inspector</li>
         <li>• <strong>Shift + Drag:</strong> Draw Transition</li>
-        <li>• <strong>Double-Click Node/Transition:</strong> Edit Properties</li>
-        <li>• <strong>Select + Delete:</strong> Remove Object</li>
+        <li>• <strong>Select + Delete / Backspace:</strong> Remove Object</li>
+        <li>• <em>Leave condition empty for an 'always' (*) transition.</em></li>
       </ul>
     </div>
   </main>
@@ -140,134 +125,245 @@
     const canvas = document.getElementById('fsmCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Data Models
     let isAdvancedMode = false;
-    let machineType = 'moore'; // 'moore' or 'mealy'
+    let machineType = 'moore';
     let nodes = [];
     let transitions = [];
     
-    // UI State
-    let selectedObject = null;
+    let selectedObject = null; 
     let draggedNode = null;
     let shiftDragSource = null;
     let mousePos = { x: 0, y: 0 };
     
-    // Simulation State
     let currentInput = '0';
     let currentState = null;
-
     const NODE_RADIUS = 30;
 
-    function resizeCanvas() {
-      canvas.width = canvas.parentElement.clientWidth;
-      canvas.height = canvas.parentElement.clientHeight;
-      draw();
-    }
+    function resizeCanvas() { canvas.width = canvas.parentElement.clientWidth; canvas.height = canvas.parentElement.clientHeight; draw(); }
     window.addEventListener('resize', resizeCanvas);
 
-    // Initializer
     function init() {
       resizeCanvas();
-      
       const s0 = { id: 1, x: 200, y: 250, label: 'S0', output: '0', isInitial: true };
       const s1 = { id: 2, x: 450, y: 250, label: 'S1', output: '1', isInitial: false };
       nodes.push(s0, s1);
-      
       transitions.push(
         { from: s0, to: s1, condition: '1', output: '1' },
         { from: s1, to: s0, condition: '0', output: '0' },
         { from: s0, to: s0, condition: '0', output: '0' },
-        { from: s1, to: s1, condition: '1', output: '1' }
+        { from: s1, to: s1, condition: '', output: '1' } 
       );
+      resetSimulation(); draw();
+    }
+
+    // --- Core Model Loader ---
+    function applyFSMData(data) {
+      isAdvancedMode = !!data.isAdvancedMode;
+      machineType = data.machineType || 'moore';
+      document.getElementById('advanced-toggle').checked = isAdvancedMode;
+      document.getElementById('machine-type').value = machineType;
+      toggleAdvancedMode();
+
+      nodes = data.nodes || [];
+      transitions = (data.transitions || []).map(t => ({
+        from: nodes.find(n => n.id === t.from),
+        to: nodes.find(n => n.id === t.to),
+        condition: t.condition !== undefined ? t.condition : '',
+        output: t.output !== undefined ? t.output : '0'
+      })).filter(t => t.from && t.to);
 
       resetSimulation();
+      deselectObject();
       draw();
     }
 
-    // --- UI Toggles ---
+    // --- Example Fetcher ---
+    async function loadSelectedExample(filename) {
+      if (!filename) return;
+
+      try {
+        const response = await fetch(`./examples/${filename}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const data = await response.json();
+        applyFSMData(data);
+      } catch (err) {
+        alert(`Failed to load example "${filename}". Make sure the file exists in the /examples folder.`);
+        console.error(err);
+      } finally {
+        document.getElementById('example-select').value = ''; // Reset dropdown selection
+      }
+    }
+
+    // --- File I/O (Save & Load) ---
+    function saveFSM() {
+      const data = {
+        isAdvancedMode,
+        machineType,
+        nodes,
+        transitions: transitions.map(t => ({
+          from: t.from.id,
+          to: t.to.id,
+          condition: t.condition,
+          output: t.output
+        }))
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'fsm_model.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function loadFSM() {
+      document.getElementById('file-input').click();
+    }
+
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          applyFSMData(data);
+        } catch (err) {
+          alert('Failed to load FSM file. The file format is invalid.');
+          console.error(err);
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    // --- Property Inspector ---
+    function renderInspector() {
+      const inspector = document.getElementById('inspector');
+      const content = document.getElementById('inspector-content');
+      const title = document.getElementById('inspector-title');
+
+      if (!selectedObject) { inspector.style.display = 'none'; return; }
+      inspector.style.display = 'block';
+
+      if (selectedObject.type === 'node') {
+        const node = selectedObject.obj;
+        title.innerText = 'State Node';
+        const showOutput = (!isAdvancedMode || machineType === 'moore');
+
+        content.innerHTML = `
+          <div class="inspector-field">
+            <label>State Label</label>
+            <input type="text" id="insp-label" value="${node.label}">
+          </div>
+          ${showOutput ? `
+          <div class="inspector-field">
+            <label>Output Value</label>
+            <input type="text" id="insp-output" value="${node.output}">
+          </div>` : ''}
+          <div class="inspector-field" style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+            <input type="checkbox" id="insp-initial" ${node.isInitial ? 'checked' : ''}>
+            <label for="insp-initial" style="margin:0; cursor:pointer;">Initial State</label>
+          </div>
+          <button class="btn-delete" onclick="deleteSelected()">Delete Node</button>
+        `;
+
+        document.getElementById('insp-label').addEventListener('input', e => { node.label = e.target.value; updateStatusDisplay(); draw(); });
+        if (showOutput) document.getElementById('insp-output').addEventListener('input', e => { node.output = e.target.value; updateStatusDisplay(); draw(); });
+        document.getElementById('insp-initial').addEventListener('change', e => {
+          if (e.target.checked) { nodes.forEach(n => n.isInitial = false); node.isInitial = true; currentState = node; } 
+          else { node.isInitial = false; }
+          updateStatusDisplay(); draw();
+        });
+
+      } else if (selectedObject.type === 'transition') {
+        const t = selectedObject.obj;
+        title.innerText = 'Transition Edge';
+        const showOutput = (isAdvancedMode && machineType === 'mealy');
+
+        content.innerHTML = `
+          <div class="inspector-field">
+            <label>Input Condition (Empty = *)</label>
+            <input type="text" id="insp-cond" value="${t.condition}">
+          </div>
+          ${showOutput ? `
+          <div class="inspector-field">
+            <label>Transition Output</label>
+            <input type="text" id="insp-output" value="${t.output}">
+          </div>` : ''}
+          <button class="btn-delete" onclick="deleteSelected()">Delete Transition</button>
+        `;
+
+        document.getElementById('insp-cond').addEventListener('input', e => { t.condition = e.target.value; updateStatusDisplay(); draw(); });
+        if (showOutput) document.getElementById('insp-output').addEventListener('input', e => { t.output = e.target.value; updateStatusDisplay(); draw(); });
+      }
+    }
+
+    function deselectObject() { selectedObject = null; renderInspector(); draw(); }
+    function deleteSelected() {
+      if (!selectedObject) return;
+      if (selectedObject.type === 'node') {
+        const target = selectedObject.obj;
+        nodes = nodes.filter(n => n !== target);
+        transitions = transitions.filter(t => t.from !== target && t.to !== target);
+        if (currentState === target) currentState = nodes[0] || null;
+      } else {
+        transitions = transitions.filter(t => t !== selectedObject.obj);
+      }
+      deselectObject(); updateStatusDisplay(); draw();
+    }
+
     function toggleAdvancedMode() {
       isAdvancedMode = document.getElementById('advanced-toggle').checked;
-      
-      const advControls = document.getElementById('advanced-controls');
-      const simpleInputs = document.getElementById('simple-inputs');
-      const multiInput = document.getElementById('multi-input');
-
+      document.getElementById('advanced-controls').classList.toggle('visible', isAdvancedMode);
+      document.getElementById('simple-inputs').style.display = isAdvancedMode ? 'none' : 'flex';
+      document.getElementById('multi-input').style.display = isAdvancedMode ? 'block' : 'none';
       if (isAdvancedMode) {
-        advControls.classList.add('visible');
-        simpleInputs.style.display = 'none';
-        multiInput.style.display = 'block';
-        currentInput = multiInput.value;
+        currentInput = document.getElementById('multi-input').value;
       } else {
-        advControls.classList.remove('visible');
-        simpleInputs.style.display = 'flex';
-        multiInput.style.display = 'none';
-        machineType = 'moore';
-        document.getElementById('machine-type').value = 'moore';
-        setSimpleInput('0');
+        machineType = 'moore'; document.getElementById('machine-type').value = 'moore'; setSimpleInput('0');
       }
-      updateStatusDisplay();
-      draw();
+      renderInspector(); updateStatusDisplay(); draw();
     }
 
-    function changeMachineType() {
-      machineType = document.getElementById('machine-type').value;
-      updateStatusDisplay();
-      draw();
-    }
-
-    // --- Simulation Logic ---
+    function changeMachineType() { machineType = document.getElementById('machine-type').value; renderInspector(); updateStatusDisplay(); draw(); }
     function setSimpleInput(val) {
       if (isAdvancedMode) return;
       currentInput = val;
       document.getElementById('btn-input-0').classList.toggle('active', val === '0');
       document.getElementById('btn-input-1').classList.toggle('active', val === '1');
-      updateStatusDisplay(); // Mealy output might change on input change
-    }
-
-    function handleMultiInput() {
-      currentInput = document.getElementById('multi-input').value.trim();
-      updateStatusDisplay(); // Mealy outputs depend on current input
-    }
-
-    function resetSimulation() {
-      const initialNode = nodes.find(n => n.isInitial) || nodes[0] || null;
-      currentState = initialNode;
       updateStatusDisplay();
-      draw();
+    }
+    function handleMultiInput() { currentInput = document.getElementById('multi-input').value.trim(); updateStatusDisplay(); }
+    function resetSimulation() { currentState = nodes.find(n => n.isInitial) || nodes[0] || null; updateStatusDisplay(); draw(); }
+
+    function getActiveTransition() {
+      if (!currentState) return null;
+      const exactMatch = transitions.find(t => t.from === currentState && t.condition === currentInput);
+      if (exactMatch) return exactMatch;
+      const wildcardMatch = transitions.find(t => t.from === currentState && (t.condition.trim() === '' || t.condition.trim() === '*'));
+      return wildcardMatch || null;
     }
 
     function triggerClockPulse() {
-      if (!currentState) return;
-
-      const transition = transitions.find(t => 
-        t.from === currentState && t.condition === currentInput
-      );
-
-      if (transition) {
-        currentState = transition.to;
-      }
-      updateStatusDisplay();
-      draw();
+      const transition = getActiveTransition();
+      if (transition) currentState = transition.to;
+      updateStatusDisplay(); draw();
     }
 
     function updateStatusDisplay() {
       const display = document.getElementById('status-display');
-      if (!currentState) {
-        display.innerText = `State: None | Output: --`;
-        return;
-      }
+      if (!currentState) { display.innerText = `State: None | Output: --`; return; }
 
       let activeOutput = '--';
       if (machineType === 'moore') {
         activeOutput = currentState.output;
       } else if (machineType === 'mealy') {
-        // Mealy output depends on current state AND current input combination immediately
-        const activeTransition = transitions.find(t => 
-          t.from === currentState && t.condition === currentInput
-        );
+        const activeTransition = getActiveTransition();
         activeOutput = activeTransition ? activeTransition.output : 'undef';
       }
-
       display.innerText = `State: ${currentState.label} | Output: ${activeOutput}`;
     }
 
@@ -275,14 +371,10 @@
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       transitions.forEach(t => drawTransition(t));
-
       if (shiftDragSource) {
-        ctx.beginPath(); ctx.setLineDash([5, 5]);
-        ctx.moveTo(shiftDragSource.x, shiftDragSource.y);
-        ctx.lineTo(mousePos.x, mousePos.y);
-        ctx.strokeStyle = '#94a3b8'; ctx.stroke(); ctx.setLineDash([]);
+        ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.moveTo(shiftDragSource.x, shiftDragSource.y);
+        ctx.lineTo(mousePos.x, mousePos.y); ctx.strokeStyle = '#94a3b8'; ctx.stroke(); ctx.setLineDash([]);
       }
-
       nodes.forEach(node => drawNode(node));
     }
 
@@ -290,28 +382,18 @@
       const isActive = (node === currentState);
       const isSelected = (selectedObject && selectedObject.obj === node);
 
-      ctx.beginPath();
-      ctx.arc(node.x, node.y, NODE_RADIUS, 0, 2 * Math.PI);
-      ctx.fillStyle = isActive ? '#dcfce7' : '#ffffff';
-      ctx.fill();
-
+      ctx.beginPath(); ctx.arc(node.x, node.y, NODE_RADIUS, 0, 2 * Math.PI);
+      ctx.fillStyle = isActive ? '#dcfce7' : '#ffffff'; ctx.fill();
       ctx.lineWidth = isSelected ? 3 : 2;
-      ctx.strokeStyle = isActive ? '#22c55e' : (isSelected ? '#2563eb' : '#334155');
-      ctx.stroke();
+      ctx.strokeStyle = isActive ? '#22c55e' : (isSelected ? '#2563eb' : '#334155'); ctx.stroke();
 
       if (node.isInitial) {
-        ctx.beginPath();
-        ctx.moveTo(node.x - NODE_RADIUS - 20, node.y);
-        ctx.lineTo(node.x - NODE_RADIUS, node.y);
+        ctx.beginPath(); ctx.moveTo(node.x - NODE_RADIUS - 20, node.y); ctx.lineTo(node.x - NODE_RADIUS, node.y);
         ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2; ctx.stroke();
         drawArrowHead(node.x - NODE_RADIUS, node.y, 0);
       }
 
-      ctx.fillStyle = '#0f172a';
-      ctx.font = 'bold 14px sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      
-      // Node Text Rendering changes based on Moore vs Mealy
+      ctx.fillStyle = '#0f172a'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       const displayText = machineType === 'moore' ? `${node.label}/${node.output}` : node.label;
       ctx.fillText(displayText, node.x, node.y);
     }
@@ -322,104 +404,68 @@
       ctx.fillStyle = ctx.strokeStyle;
       ctx.lineWidth = isSelected ? 2.5 : 1.5;
 
-      const displayText = machineType === 'mealy' ? `${t.condition}/${t.output}` : t.condition;
+      const displayCond = (t.condition.trim() === '') ? '*' : t.condition;
+      const displayText = machineType === 'mealy' ? `${displayCond}/${t.output}` : displayCond;
+      let textX, textY;
 
       if (t.from === t.to) {
         const loopRadius = 20;
         const x = t.from.x; const y = t.from.y - NODE_RADIUS;
-
-        ctx.beginPath();
-        ctx.arc(x, y - loopRadius, loopRadius, 0.8 * Math.PI, 2.2 * Math.PI);
-        ctx.stroke();
+        ctx.beginPath(); ctx.arc(x, y - loopRadius, loopRadius, 0.8 * Math.PI, 2.2 * Math.PI); ctx.stroke();
         drawArrowHead(x + loopRadius * Math.cos(0.25 * Math.PI), y - loopRadius + loopRadius * Math.sin(0.25 * Math.PI), -Math.PI / 4);
-
-        ctx.font = '12px sans-serif';
-        ctx.fillText(displayText, x, y - loopRadius * 2 - 5);
-        return;
-      }
-
-      const dx = t.to.x - t.from.x; const dy = t.to.y - t.from.y;
-      const dist = Math.hypot(dx, dy);
-      if (dist === 0) return;
-
-      const angle = Math.atan2(dy, dx);
-      const reverseExists = transitions.some(other => other.from === t.to && other.to === t.from);
-      let startX, startY, endX, endY, textX, textY;
-
-      if (reverseExists) {
-        const curveOffset = 25;
-        const midX = (t.from.x + t.to.x) / 2; const midY = (t.from.y + t.to.y) / 2;
-        const normalX = -Math.sin(angle); const normalY = Math.cos(angle);
-        const ctrlX = midX + normalX * curveOffset; const ctrlY = midY + normalY * curveOffset;
-
-        startX = t.from.x + NODE_RADIUS * Math.cos(angle + 0.3);
-        startY = t.from.y + NODE_RADIUS * Math.sin(angle + 0.3);
-        endX = t.to.x - NODE_RADIUS * Math.cos(angle - 0.3);
-        endY = t.to.y - NODE_RADIUS * Math.sin(angle - 0.3);
-
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.quadraticCurveTo(ctrlX, ctrlY, endX, endY);
-        ctx.stroke();
-
-        const endAngle = Math.atan2(endY - ctrlY, endX - ctrlX);
-        drawArrowHead(endX, endY, endAngle);
-        textX = ctrlX + normalX * 8; textY = ctrlY + normalY * 8;
+        textX = x; textY = y - loopRadius * 2 - 5;
       } else {
-        startX = t.from.x + NODE_RADIUS * Math.cos(angle);
-        startY = t.from.y + NODE_RADIUS * Math.sin(angle);
-        endX = t.to.x - NODE_RADIUS * Math.cos(angle);
-        endY = t.to.y - NODE_RADIUS * Math.sin(angle);
+        const dx = t.to.x - t.from.x; const dy = t.to.y - t.from.y;
+        if (Math.hypot(dx, dy) === 0) return;
+        const angle = Math.atan2(dy, dx);
+        const reverseExists = transitions.some(other => other.from === t.to && other.to === t.from);
 
-        ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(endX, endY); ctx.stroke();
-        drawArrowHead(endX, endY, angle);
+        if (reverseExists) {
+          const curveOffset = 25;
+          const midX = (t.from.x + t.to.x) / 2; const midY = (t.from.y + t.to.y) / 2;
+          const normalX = -Math.sin(angle); const normalY = Math.cos(angle);
+          const ctrlX = midX + normalX * curveOffset; const ctrlY = midY + normalY * curveOffset;
 
-        textX = (startX + endX) / 2 - Math.sin(angle) * 12;
-        textY = (startY + endY) / 2 + Math.cos(angle) * 12;
+          const startX = t.from.x + NODE_RADIUS * Math.cos(angle + 0.3); const startY = t.from.y + NODE_RADIUS * Math.sin(angle + 0.3);
+          const endX = t.to.x - NODE_RADIUS * Math.cos(angle - 0.3); const endY = t.to.y - NODE_RADIUS * Math.sin(angle - 0.3);
+
+          ctx.beginPath(); ctx.moveTo(startX, startY); ctx.quadraticCurveTo(ctrlX, ctrlY, endX, endY); ctx.stroke();
+          drawArrowHead(endX, endY, Math.atan2(endY - ctrlY, endX - ctrlX));
+          textX = ctrlX + normalX * 8; textY = ctrlY + normalY * 8;
+        } else {
+          const startX = t.from.x + NODE_RADIUS * Math.cos(angle); const startY = t.from.y + NODE_RADIUS * Math.sin(angle);
+          const endX = t.to.x - NODE_RADIUS * Math.cos(angle); const endY = t.to.y - NODE_RADIUS * Math.sin(angle);
+
+          ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(endX, endY); ctx.stroke();
+          drawArrowHead(endX, endY, angle);
+          textX = (startX + endX) / 2 - Math.sin(angle) * 12; textY = (startY + endY) / 2 + Math.cos(angle) * 12;
+        }
       }
 
-      ctx.font = 'bold 12px sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      
-      // Draw background rect for text readability
+      t.textX = textX; t.textY = textY;
+      ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       const textWidth = ctx.measureText(displayText).width;
       ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.fillRect(textX - textWidth/2 - 2, textY - 8, textWidth + 4, 16);
-      
+      ctx.fillRect(textX - textWidth/2 - 4, textY - 10, textWidth + 8, 20);
       ctx.fillStyle = isSelected ? '#2563eb' : '#64748b';
       ctx.fillText(displayText, textX, textY);
     }
 
     function drawArrowHead(x, y, angle) {
-      const headLen = 10;
-      ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+      const headLen = 10; ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
       ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-headLen, -headLen / 2); ctx.lineTo(-headLen, headLen / 2);
       ctx.closePath(); ctx.fill(); ctx.restore();
     }
 
-    // --- Interactive Mouse Handlers ---
-    function getMousePos(e) {
-      const rect = canvas.getBoundingClientRect();
-      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-    }
-
+    function getMousePos(e) { const rect = canvas.getBoundingClientRect(); return { x: e.clientX - rect.left, y: e.clientY - rect.top }; }
     function findNodeAt(pos) { return nodes.find(n => Math.hypot(n.x - pos.x, n.y - pos.y) <= NODE_RADIUS); }
     function findTransitionAt(pos) {
-      return transitions.find(t => {
-        if (t.from === t.to) return false;
-        const l2 = Math.hypot(t.from.x - t.to.x, t.from.y - t.to.y) ** 2;
-        if (l2 === 0) return false;
-        let p = ((pos.x - t.from.x) * (t.to.x - t.from.x) + (pos.y - t.from.y) * (t.to.y - t.from.y)) / l2;
-        p = Math.max(0, Math.min(1, p));
-        const d = Math.hypot(pos.x - (t.from.x + p * (t.to.x - t.from.x)), pos.y - (t.from.y + p * (t.to.y - t.from.y)));
-        return d < 12;
-      });
+      return transitions.find(t => t.textX !== undefined && t.textY !== undefined && Math.hypot(t.textX - pos.x, t.textY - pos.y) < 18);
     }
 
     canvas.addEventListener('mousedown', e => {
       mousePos = getMousePos(e);
       const clickedNode = findNodeAt(mousePos);
-
       if (e.shiftKey && clickedNode) { shiftDragSource = clickedNode; return; }
 
       if (clickedNode) {
@@ -428,7 +474,7 @@
         const clickedTransition = findTransitionAt(mousePos);
         selectedObject = clickedTransition ? { type: 'transition', obj: clickedTransition } : null;
       }
-      draw();
+      renderInspector(); draw();
     });
 
     canvas.addEventListener('mousemove', e => {
@@ -441,14 +487,10 @@
       if (shiftDragSource) {
         const targetNode = findNodeAt(mousePos);
         if (targetNode) {
-          const cond = prompt("Input condition (e.g., 00):", "0");
-          if (cond !== null) {
-            let out = "0";
-            if (machineType === 'mealy') {
-              out = prompt("Transition Output (e.g., 11):", "0");
-            }
-            transitions.push({ from: shiftDragSource, to: targetNode, condition: cond.trim(), output: out ? out.trim() : "0" });
-          }
+          const newTransition = { from: shiftDragSource, to: targetNode, condition: '', output: '0' };
+          transitions.push(newTransition);
+          selectedObject = { type: 'transition', obj: newTransition };
+          renderInspector();
         }
         shiftDragSource = null; draw();
       }
@@ -457,57 +499,21 @@
 
     canvas.addEventListener('dblclick', e => {
       const pos = getMousePos(e);
-      const clickedNode = findNodeAt(pos);
-
-      if (clickedNode) {
-        const label = prompt("Edit State Label:", clickedNode.label);
-        if (label === null) return;
-        clickedNode.label = label.trim();
-
-        if (machineType === 'moore' || !isAdvancedMode) {
-          const output = prompt("Edit State Output:", clickedNode.output);
-          if (output !== null) clickedNode.output = output.trim();
-        }
-
-        if (confirm("Set as Initial State?")) {
-          nodes.forEach(n => n.isInitial = false);
-          clickedNode.isInitial = true;
-          currentState = clickedNode;
-        }
-        updateStatusDisplay();
-      } else {
-        const clickedTransition = findTransitionAt(pos);
-        if (clickedTransition) {
-          const cond = prompt("Edit Condition:", clickedTransition.condition);
-          if (cond !== null) clickedTransition.condition = cond.trim();
-          
-          if (machineType === 'mealy') {
-            const out = prompt("Edit Output:", clickedTransition.output);
-            if (out !== null) clickedTransition.output = out.trim();
-          }
-          updateStatusDisplay();
-        } else {
-          nodes.push({ id: Date.now(), x: pos.x, y: pos.y, label: `S${nodes.length}`, output: '0', isInitial: nodes.length === 0 });
-          if (nodes.length === 1) currentState = nodes[0];
-        }
+      if (!findNodeAt(pos) && !findTransitionAt(pos)) {
+        const newNode = { id: Date.now(), x: pos.x, y: pos.y, label: `S${nodes.length}`, output: '0', isInitial: nodes.length === 0 };
+        nodes.push(newNode);
+        if (newNode.isInitial) currentState = newNode;
+        selectedObject = { type: 'node', obj: newNode };
+        renderInspector(); updateStatusDisplay(); draw();
       }
-      draw();
     });
 
     window.addEventListener('keydown', e => {
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedObject) {
-        if (selectedObject.type === 'node') {
-          nodes = nodes.filter(n => n !== selectedObject.obj);
-          transitions = transitions.filter(t => t.from !== selectedObject.obj && t.to !== selectedObject.obj);
-          if (currentState === selectedObject.obj) currentState = nodes[0] || null;
-        } else {
-          transitions = transitions.filter(t => t !== selectedObject.obj);
-        }
-        selectedObject = null; updateStatusDisplay(); draw();
-      }
+      if (document.activeElement.tagName === 'INPUT') return;
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedObject) deleteSelected();
     });
 
-    function clearCanvas() { nodes = []; transitions = []; selectedObject = null; currentState = null; updateStatusDisplay(); draw(); }
+    function clearCanvas() { nodes = []; transitions = []; selectedObject = null; currentState = null; renderInspector(); updateStatusDisplay(); draw(); }
 
     init();
   </script>
