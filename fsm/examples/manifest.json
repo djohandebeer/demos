@@ -1,0 +1,7 @@
+[
+  {
+    "file": "on_pulse.json",
+    "name": "Laser Timer",
+    "description": "Laser timer that outputs three cycles high after button press."
+  }
+]
