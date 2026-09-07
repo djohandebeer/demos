@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive FSM Simulator</title>
+  <style>
+    :root {
+      --bg-color: #f8f9fa;
+      --panel-bg: #ffffff;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --accent-active: #22c55e;
+      --border: #cbd5e1;
+      --text: #1e293b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-color);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background: var(--panel-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+      z-index: 10;
+    }
+
+    .title { font-weight: 700; font-size: 1.1rem; }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: var(--primary-hover); }
+
+    .btn-clock {
+      background: var(--accent-active);
+      font-size: 0.95rem;
+    }
+    .btn-clock:hover { background: #16a34a; }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: var(--text);
+    }
+    .btn-secondary:hover { background: #cbd5e1; }
+
+    .input-toggle {
+      display: flex;
+      align-items: center;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .toggle-btn {
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      user-select: none;
+    }
+    .toggle-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .status-badge {
+      background: #f1f5f9;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-family: monospace;
+      font-size: 0.95rem;
+    }
+
+    main {
+      flex: 1;
+      position: relative;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #ffffff;
+      cursor: crosshair;
+    }
+
+    .instructions {
+      position: absolute;
+      bottom: 15px;
+      left: 15px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(4px);
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+      pointer-events: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .instructions ul { list-style: none; margin-top: 4px; }
+    .instructions li { margin-bottom: 2px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="title">FSM Interactive Designer & Simulator</div>
+    
+    <div class="control-group">
+      <label>Current Input Bit:</label>
+      <div class="input-toggle">
+        <div class="toggle-btn active" id="btn-input-0" onclick="setInput('0')">0</div>
+        <div class="toggle-btn" id="btn-input-1" onclick="setInput('1')">1</div>
+      </div>
+
+      <button class="btn btn-clock" onclick="triggerClockPulse()">⚡ Clock Edge</button>
+      <button class="btn btn-secondary" onclick="resetSimulation()">Reset Sim</button>
+      <button class="btn btn-secondary" onclick="clearCanvas()">Clear All</button>
+    </div>
+
+    <div class="control-group">
+      <div class="status-badge" id="status-display">State: -- | Output: --</div>
+    </div>
+  </header>
+
+  <main>
+    <canvas id="fsmCanvas"></canvas>
+    
+    <div class="instructions">
+      <strong>Editor Controls:</strong>
+      <ul>
+        <li>• <strong>Double-Click canvas:</strong> Create new State Node</li>
+        <li>• <strong>Shift + Drag (Node to Node):</strong> Draw Transition Arrow</li>
+        <li>• <strong>Double-Click Node:</strong> Edit Name, Output, or set as Initial State</li>
+        <li>• <strong>Double-Click Transition:</strong> Edit Input Condition (e.g. 0, 1)</li>
+        <li>• <strong>Click + Drag:</strong> Move State Node</li>
+        <li>• <strong>Select + Delete / Backspace:</strong> Delete Node or Transition</li>
+      </ul>
+    </div>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('fsmCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Data Models
+    let nodes = [];
+    let transitions = [];
+    
+    // UI State
+    let selectedObject = null; // { type: 'node'|'transition', obj: ... }
+    let draggedNode = null;
+    let shiftDragSource = null;
+    let mousePos = { x: 0, y: 0 };
+    
+    // Simulation State
+    let currentInput = '0';
+    let currentState = null;
+
+    const NODE_RADIUS = 30;
+
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+      draw();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    // Initializer
+    function init() {
+      resizeCanvas();
+      
+      // Default initial states for quick testing
+      const s0 = { id: 1, x: 200, y: 250, label: 'S0', output: '0', isInitial: true };
+      const s1 = { id: 2, x: 450, y: 250, label: 'S1', output: '1', isInitial: false };
+      nodes.push(s0, s1);
+      
+      transitions.push(
+        { from: s0, to: s1, condition: '1' },
+        { from: s1, to: s0, condition: '0' },
+        { from: s0, to: s0, condition: '0' },
+        { from: s1, to: s1, condition: '1' }
+      );
+
+      resetSimulation();
+      draw();
+    }
+
+    // --- Simulation Logic ---
+    function setInput(val) {
+      currentInput = val;
+      document.getElementById('btn-input-0').classList.toggle('active', val === '0');
+      document.getElementById('btn-input-1').classList.toggle('active', val === '1');
+    }
+
+    function resetSimulation() {
+      const initialNode = nodes.find(n => n.isInitial) || nodes[0] || null;
+      currentState = initialNode;
+      updateStatusDisplay();
+      draw();
+    }
+
+    function triggerClockPulse() {
+      if (!currentState) return;
+
+      // Find matching transition from current state
+      const transition = transitions.find(t => 
+        t.from === currentState && t.condition.trim() === currentInput.trim()
+      );
+
+      if (transition) {
+        currentState = transition.to;
+      }
+      updateStatusDisplay();
+      draw();
+    }
+
+    function updateStatusDisplay() {
+      const display = document.getElementById('status-display');
+      if (currentState) {
+        display.innerText = `State: ${currentState.label} | Output: ${currentState.output}`;
+      } else {
+        display.innerText = `State: None | Output: --`;
+      }
+    }
+
+    // --- Drawing Engine ---
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Render Transitions
+      transitions.forEach(t => drawTransition(t));
+
+      // Render Shift-Drag temporary arrow line
+      if (shiftDragSource) {
+        ctx.beginPath();
+        ctx.setLineDash([5, 5]);
+        ctx.moveTo(shiftDragSource.x, shiftDragSource.y);
+        ctx.lineTo(mousePos.x, mousePos.y);
+        ctx.strokeStyle = '#94a3b8';
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Render Nodes
+      nodes.forEach(node => drawNode(node));
+    }
+
+    function drawNode(node) {
+      const isActive = (node === currentState);
+      const isSelected = (selectedObject && selectedObject.obj === node);
+
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, NODE_RADIUS, 0, 2 * Math.PI);
+
+      // Node Fill
+      if (isActive) {
+        ctx.fillStyle = '#dcfce7'; // Active state highlight (light green)
+      } else {
+        ctx.fillStyle = '#ffffff';
+      }
+      ctx.fill();
+
+      // Node Border
+      ctx.lineWidth = isSelected ? 3 : 2;
+      ctx.strokeStyle = isActive ? '#22c55e' : (isSelected ? '#2563eb' : '#334155');
+      ctx.stroke();
+
+      // Initial State Indicator Arrow
+      if (node.isInitial) {
+        ctx.beginPath();
+        ctx.moveTo(node.x - NODE_RADIUS - 20, node.y);
+        ctx.lineTo(node.x - NODE_RADIUS, node.y);
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        drawArrowHead(node.x - NODE_RADIUS, node.y, 0);
+      }
+
+      // Label Text (State Name / Output)
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${node.label}/${node.output}`, node.x, node.y);
+    }
+
+    function drawTransition(t) {
+      const isSelected = (selectedObject && selectedObject.obj === t);
+      ctx.strokeStyle = isSelected ? '#2563eb' : '#64748b';
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.lineWidth = isSelected ? 2.5 : 1.5;
+
+      // Self-loop
+      if (t.from === t.to) {
+        const loopRadius = 20;
+        const x = t.from.x;
+        const y = t.from.y - NODE_RADIUS;
+
+        ctx.beginPath();
+        ctx.arc(x, y - loopRadius, loopRadius, 0.8 * Math.PI, 2.2 * Math.PI);
+        ctx.stroke();
+
+        drawArrowHead(x + loopRadius * Math.cos(0.25 * Math.PI), y - loopRadius + loopRadius * Math.sin(0.25 * Math.PI), -Math.PI / 4);
+
+        // Text
+        ctx.font = '12px sans-serif';
+        ctx.fillText(`In: ${t.condition}`, x, y - loopRadius * 2 - 5);
+        return;
+      }
+
+      // Straight / Curved Arrow between nodes
+      const dx = t.to.x - t.from.x;
+      const dy = t.to.y - t.from.y;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist === 0) return;
+
+      const angle = Math.atan2(dy, dx);
+      
+      // Check if bidirectional pair exists (to curve arrow)
+      const reverseExists = transitions.some(other => other.from === t.to && other.to === t.from);
+      
+      let startX, startY, endX, endY, textX, textY;
+
+      if (reverseExists) {
+        // Curve rendering
+        const curveOffset = 25;
+        const midX = (t.from.x + t.to.x) / 2;
+        const midY = (t.from.y + t.to.y) / 2;
+        const normalX = -Math.sin(angle);
+        const normalY = Math.cos(angle);
+
+        const ctrlX = midX + normalX * curveOffset;
+        const ctrlY = midY + normalY * curveOffset;
+
+        // Trim endpoints to edges of node circle
+        startX = t.from.x + NODE_RADIUS * Math.cos(angle + 0.3);
+        startY = t.from.y + NODE_RADIUS * Math.sin(angle + 0.3);
+        endX = t.to.x - NODE_RADIUS * Math.cos(angle - 0.3);
+        endY = t.to.y - NODE_RADIUS * Math.sin(angle - 0.3);
+
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.quadraticCurveTo(ctrlX, ctrlY, endX, endY);
+        ctx.stroke();
+
+        const endAngle = Math.atan2(endY - ctrlY, endX - ctrlX);
+        drawArrowHead(endX, endY, endAngle);
+
+        textX = ctrlX + normalX * 8;
+        textY = ctrlY + normalY * 8;
+      } else {
+        // Straight line
+        startX = t.from.x + NODE_RADIUS * Math.cos(angle);
+        startY = t.from.y + NODE_RADIUS * Math.sin(angle);
+        endX = t.to.x - NODE_RADIUS * Math.cos(angle);
+        endY = t.to.y - NODE_RADIUS * Math.sin(angle);
+
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        drawArrowHead(endX, endY, angle);
+
+        textX = (startX + endX) / 2 - Math.sin(angle) * 12;
+        textY = (startY + endY) / 2 + Math.cos(angle) * 12;
+      }
+
+      // Draw transition label
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(t.condition, textX, textY);
+    }
+
+    function drawArrowHead(x, y, angle) {
+      const headLen = 10;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-headLen, -headLen / 2);
+      ctx.lineTo(-headLen, headLen / 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // --- Interactive Mouse Handlers ---
+    function getMousePos(e) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+
+    function findNodeAt(pos) {
+      return nodes.find(n => Math.hypot(n.x - pos.x, n.y - pos.y) <= NODE_RADIUS);
+    }
+
+    function findTransitionAt(pos) {
+      return transitions.find(t => {
+        if (t.from === t.to) return false;
+        const d = distToSegment(pos, t.from, t.to);
+        return d < 8;
+      });
+    }
+
+    function distToSegment(p, v, w) {
+      const l2 = Math.hypot(v.x - w.x, v.y - w.y) ** 2;
+      if (l2 === 0) return Math.hypot(p.x - v.x, p.y - v.y);
+      let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+      t = Math.max(0, Math.min(1, t));
+      return Math.hypot(p.x - (v.x + t * (w.x - v.x)), p.y - (v.y + t * (w.y - v.y)));
+    }
+
+    canvas.addEventListener('mousedown', e => {
+      mousePos = getMousePos(e);
+      const clickedNode = findNodeAt(mousePos);
+
+      if (e.shiftKey && clickedNode) {
+        shiftDragSource = clickedNode;
+        return;
+      }
+
+      if (clickedNode) {
+        draggedNode = clickedNode;
+        selectedObject = { type: 'node', obj: clickedNode };
+      } else {
+        const clickedTransition = findTransitionAt(mousePos);
+        if (clickedTransition) {
+          selectedObject = { type: 'transition', obj: clickedTransition };
+        } else {
+          selectedObject = null;
+        }
+      }
+      draw();
+    });
+
+    canvas.addEventListener('mousemove', e => {
+      mousePos = getMousePos(e);
+      if (draggedNode) {
+        draggedNode.x = mousePos.x;
+        draggedNode.y = mousePos.y;
+        draw();
+      } else if (shiftDragSource) {
+        draw();
+      }
+    });
+
+    canvas.addEventListener('mouseup', e => {
+      if (shiftDragSource) {
+        const targetNode = findNodeAt(mousePos);
+        if (targetNode) {
+          const cond = prompt("Enter transition input condition:", "0");
+          if (cond !== null) {
+            transitions.push({ from: shiftDragSource, to: targetNode, condition: cond.trim() });
+          }
+        }
+        shiftDragSource = null;
+        draw();
+      }
+      draggedNode = null;
+    });
+
+    canvas.addEventListener('dblclick', e => {
+      const pos = getMousePos(e);
+      const clickedNode = findNodeAt(pos);
+
+      if (clickedNode) {
+        // Edit State
+        const label = prompt("Edit State Label:", clickedNode.label);
+        if (label === null) return;
+        const output = prompt("Edit State Output:", clickedNode.output);
+        if (output === null) return;
+        const isInit = confirm("Set as Initial State?");
+
+        clickedNode.label = label.trim();
+        clickedNode.output = output.trim();
+        if (isInit) {
+          nodes.forEach(n => n.isInitial = false);
+          clickedNode.isInitial = true;
+          currentState = clickedNode;
+        }
+        updateStatusDisplay();
+      } else {
+        const clickedTransition = findTransitionAt(pos);
+        if (clickedTransition) {
+          // Edit Transition
+          const cond = prompt("Edit Transition Condition:", clickedTransition.condition);
+          if (cond !== null) clickedTransition.condition = cond.trim();
+        } else {
+          // Create new State Node
+          const newId = nodes.length + 1;
+          const newNode = {
+            id: Date.now(),
+            x: pos.x,
+            y: pos.y,
+            label: `S${nodes.length}`,
+            output: '0',
+            isInitial: nodes.length === 0
+          };
+          nodes.push(newNode);
+          if (newNode.isInitial) currentState = newNode;
+        }
+      }
+      draw();
+    });
+
+    window.addEventListener('keydown', e => {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedObject) {
+        if (selectedObject.type === 'node') {
+          const target = selectedObject.obj;
+          nodes = nodes.filter(n => n !== target);
+          transitions = transitions.filter(t => t.from !== target && t.to !== target);
+          if (currentState === target) currentState = nodes[0] || null;
+        } else if (selectedObject.type === 'transition') {
+          transitions = transitions.filter(t => t !== selectedObject.obj);
+        }
+        selectedObject = null;
+        updateStatusDisplay();
+        draw();
+      }
+    });
+
+    function clearCanvas() {
+      nodes = [];
+      transitions = [];
+      selectedObject = null;
+      currentState = null;
+      updateStatusDisplay();
+      draw();
+    }
+
+    // Launch App
+    init();
+  </script>
+</body>
+</html>
